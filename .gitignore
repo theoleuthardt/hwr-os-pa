@@ -53,3 +53,7 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# CLion IDE specific stuff
+./ide_run_configurations
+./.idea
