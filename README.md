@@ -1,5 +1,16 @@
 # Multithreaded File Search Program
 
+## Authors
+
+**Institution:** HWR Berlin - Hochschule für Wirtschaft und Recht
+**Course:** Operating Systems
+**Date:** December 2024
+
+| Name           | Student ID  |
+|----------------|-------------|
+| Domenik Wilhelm | 77207300494 |
+| Theo Leuthardt | 77205844868 |
+
 ## Overview
 
 This program implements a parallel file search solution using POSIX threads or in short pthread. 

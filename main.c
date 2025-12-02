@@ -1,3 +1,17 @@
+/*
+ * ============================================================================
+ * Project:     Multithreaded File Search
+ * Institution: HWR Berlin - Hochschule für Wirtschaft und Recht
+ * Course:      Operating Systems
+ *
+ * Authors:     Domenik Wilhelm - Student ID: 77207300494
+ *              Theo Leuthardt - Student ID: 77205844868
+ *
+ * Date:        December 2024
+ * Version:     1.0
+ * ============================================================================
+ */
+
 #include "search.h"
 
 int main(void) {
