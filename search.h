@@ -44,4 +44,4 @@ void *thread_worker(void *arg);
 Node *get_next_file(int thread_id);
 int search_pattern_in_file(const char *filepath, const char *pattern, FILE *log_file, int thread_id);
 
-#endif /* SEARCH_H */
+#endif

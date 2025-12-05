@@ -163,7 +163,6 @@ Node *get_next_file(int thread_id) {
     }
 
     pthread_mutex_unlock(&list_mutex);
-
     return result;
 }
 

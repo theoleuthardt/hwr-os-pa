@@ -32,12 +32,10 @@ void *thread_worker(void *arg) {
                 fflush(log_file);
 
                 pthread_mutex_lock(&(current_file->file_mutex));
-                current_file->pattern_found = search_pattern_in_file(
-                    full_path, SEARCH_PATTERN, log_file, thread_id);
+                current_file->pattern_found = search_pattern_in_file(full_path, SEARCH_PATTERN, log_file, thread_id);
                 pthread_mutex_unlock(&(current_file->file_mutex));
 
                 files_processed++;
-
                 current_file = get_next_file(thread_id);
             }
 
