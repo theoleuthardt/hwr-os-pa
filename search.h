@@ -23,14 +23,8 @@ typedef struct Node {
     struct Node *next;
 } Node;
 
-typedef struct {
-    int thread_id;
-    FILE *log_file;
-} ThreadParam;
-
 extern Node *list_head;
 extern pthread_mutex_t list_mutex;
-
 
 void init(void);
 void finish(void);
@@ -39,9 +33,8 @@ void GenList(void);
 void Add2List(const char *filename);
 void ShowList(void);
 
-void *thread_worker(void *arg);
+int Search(const char *filename);
 
-Node *get_next_file(int thread_id);
-int search_pattern_in_file(const char *filepath, const char *pattern, FILE *log_file, int thread_id);
+void *ThrdFunc(void *arg);
 
 #endif

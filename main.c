@@ -16,7 +16,7 @@
 
 int main(void) {
     pthread_t threads[NUM_THREADS];
-    ThreadParam thread_params[NUM_THREADS];
+    int thread_ids[NUM_THREADS];
     int i = 0;
     int return_code = 0;
     int thread_created = 0;
@@ -26,11 +26,9 @@ int main(void) {
     printf("=== Starting %d threads ===\n", NUM_THREADS);
 
     for (i = 0; i < NUM_THREADS && creation_failed == 0; i++) {
-        thread_params[i].thread_id = i + 1;
-        thread_params[i].log_file = NULL;
+        thread_ids[i] = i + 1;
 
-        if (pthread_create(&threads[i], NULL, thread_worker,
-                          &thread_params[i]) != 0) {
+        if (pthread_create(&threads[i], NULL, ThrdFunc, &thread_ids[i]) != 0) {
             fprintf(stderr, "Error: Failed to create thread %d\n", i + 1);
             return_code = 1;
             thread_created = i;

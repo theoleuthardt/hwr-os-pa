@@ -1,18 +1,16 @@
 #include "search.h"
 
-void *thread_worker(void *arg) {
-    ThreadParam *param = NULL;
+void *ThrdFunc(void *arg) {
     int thread_id = 0;
     FILE *log_file = NULL;
     char log_filename[MAX_FILENAME_LENGTH];
-    Node *current_file = NULL;
-    char full_path[MAX_FILENAME_LENGTH * 2];
-    int files_processed = 0;
+    Node *current = NULL;
+    int mutex_locked = 0;
+    int search_result = 0;
     void *return_value = NULL;
 
     if (arg != NULL) {
-        param = (ThreadParam *)arg;
-        thread_id = param->thread_id;
+        thread_id = *((int *)arg);
 
         snprintf(log_filename, sizeof(log_filename), "thread_%d.log", thread_id);
         log_file = fopen(log_filename, "w");
@@ -21,34 +19,55 @@ void *thread_worker(void *arg) {
             fprintf(log_file, "=== Thread %d started ===\n", thread_id);
             fflush(log_file);
 
-            current_file = get_next_file(thread_id);
+            current = list_head;
 
-            while (current_file != NULL) {
-                snprintf(full_path, sizeof(full_path), "%s/%s",
-                        SEARCH_DIR, current_file->filename);
+            while (current != NULL) {
+                if (current->thread_number == 0) {
+                    mutex_locked = 0;
+                    if (pthread_mutex_trylock(&(current->file_mutex)) == 0) {
+                        mutex_locked = 1;
+                    }
 
-                fprintf(log_file, "[Thread %d] Processing file: %s\n",
-                        thread_id, current_file->filename);
-                fflush(log_file);
+                    if (mutex_locked == 1) {
+                        current->thread_number = thread_id;
+                        pthread_mutex_unlock(&(current->file_mutex));
 
-                pthread_mutex_lock(&(current_file->file_mutex));
-                current_file->pattern_found = search_pattern_in_file(full_path, SEARCH_PATTERN, log_file, thread_id);
-                pthread_mutex_unlock(&(current_file->file_mutex));
+                        fprintf(log_file, "[Thread %d] Processing file: %s\n",
+                                thread_id, current->filename);
+                        fflush(log_file);
 
-                files_processed++;
-                current_file = get_next_file(thread_id);
+                        search_result = Search(current->filename);
+
+                        pthread_mutex_lock(&(current->file_mutex));
+                        current->pattern_found = search_result;
+                        pthread_mutex_unlock(&(current->file_mutex));
+
+                        if (search_result == 1) {
+                            fprintf(log_file, "[Thread %d] Pattern found in file: %s\n",
+                                    thread_id, current->filename);
+                        } else {
+                            fprintf(log_file, "[Thread %d] Pattern not found in file: %s\n",
+                                    thread_id, current->filename);
+                        }
+                        fflush(log_file);
+                    } else {
+                        fprintf(log_file, "[Thread %d] File already locked: %s\n",
+                                thread_id, current->filename);
+                        fflush(log_file);
+                    }
+                } else {
+                    fprintf(log_file, "[Thread %d] File being processed by thread %d: %s\n",
+                            thread_id, current->thread_number, current->filename);
+                    fflush(log_file);
+                }
+
+                current = current->next;
             }
 
             fprintf(log_file, "=== Thread %d finished ===\n", thread_id);
-            fprintf(log_file, "Total files processed: %d\n", files_processed);
             fflush(log_file);
 
             fclose(log_file);
-
-            printf("Thread %d completed. Processed %d files.\n",
-                   thread_id, files_processed);
-        } else {
-            fprintf(stderr, "Error: Thread %d cannot open log file\n", thread_id);
         }
     }
 

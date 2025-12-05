@@ -1,4 +1,4 @@
-all: clean search
+all: search
 
 run: search
 	@echo "Running search..."

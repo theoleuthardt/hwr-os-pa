@@ -139,72 +139,30 @@ void ShowList(void) {
            total_files, files_with_pattern);
 }
 
-Node *get_next_file(int thread_id) {
-    Node *current = NULL;
-    Node *result = NULL;
-    int found = 0;
-
-    pthread_mutex_lock(&list_mutex);
-
-    current = list_head;
-    while (current != NULL && found == 0) {
-        if (current->thread_number == 0) {
-            if (pthread_mutex_trylock(&(current->file_mutex)) == 0) {
-                current->thread_number = thread_id;
-                result = current;
-                pthread_mutex_unlock(&(current->file_mutex));
-                found = 1;
-            }
-        }
-
-        if (found == 0) {
-            current = current->next;
-        }
-    }
-
-    pthread_mutex_unlock(&list_mutex);
-    return result;
-}
-
-int search_pattern_in_file(const char *filepath, const char *pattern,
-                          FILE *log_file, int thread_id) {
+int Search(const char *filename) {
     FILE *file = NULL;
+    char filepath[MAX_FILENAME_LENGTH * 2];
     char line[MAX_LINE_LENGTH];
-    int line_number = 0;
-    int found = 0;
     int result = 0;
+    int file_opened = 0;
 
+    snprintf(filepath, sizeof(filepath), "%s/%s", SEARCH_DIR, filename);
     file = fopen(filepath, "r");
 
     if (file != NULL) {
-        fprintf(log_file, "[Thread %d] Searching in file: %s\n",
-                thread_id, filepath);
-        fflush(log_file);
+        file_opened = 1;
+    }
 
+    if (file_opened == 1) {
         while (fgets(line, sizeof(line), file) != NULL) {
-            line_number++;
-            if (strstr(line, pattern) != NULL) {
-                if (found == 0) {
+            if (strstr(line, SEARCH_PATTERN) != NULL) {
+                if (result == 0) {
                     result = 1;
-                    found = 1;
                 }
-                fprintf(log_file, "[Thread %d] Pattern found in %s at line %d\n",
-                        thread_id, filepath, line_number);
-                fflush(log_file);
             }
         }
 
-        if (found == 0) {
-            fprintf(log_file, "[Thread %d] Pattern not found in %s\n",
-                    thread_id, filepath);
-            fflush(log_file);
-        }
-
         fclose(file);
-    } else {
-        fprintf(log_file, "[Thread %d] Error opening file %s: %s\n",
-                thread_id, filepath, strerror(errno));
-        fflush(log_file);
     }
 
     return result;
